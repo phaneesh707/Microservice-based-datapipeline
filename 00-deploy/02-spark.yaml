@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-master-svc
+spec:
+  selector:
+    app: spark-master-selector
+  ports:
+    - name: spark-master-port
+      port: 7077
+      targetPort: 7077
+    - name: spark-master-webui-port
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-master-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-master-selector
+  template:
+    metadata:
+      labels:
+        app: spark-master-selector
+    spec:
+      containers:
+        - name: spark-master-container
+          image: bitnami/spark:latest
+          ports:
+            - containerPort: 7077
+            - containerPort: 8080
+          env:
+            - name: SPARK_MASTER_PORT
+              value: "7077"
+            - name: SPARK_MASTER_WEBUI_PORT
+              value: "8080"
+            - name: SPARK_MASTER_LOGS_DIR
+              value: "/tmp/logs"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-worker-svc
+spec:
+  selector:
+    app: spark-worker-selector
+  ports:
+    - name: spark-worker-webui-port
+      protocol: TCP
+      port: 8082
+      targetPort: 8082
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-worker-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-worker-selector
+  template:
+    metadata:
+      labels:
+        app: spark-worker-selector
+    spec:
+      containers:
+        - name: spark-worker-container
+          image: bitnami/spark:latest
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPARK_MASTER_PORT
+              value: "7077"
+            - name: SPRAK_MODE
+              value: "worker"
+            - name: SPARK_WORKER_WEBUI_PORT
+              value: "8082"
+            - name: SPARK_WORKER_CORES
+              value: "1"
+            - name: SPARK_WORKER_MEMORY
+              value: "1g"
+            - name: SPARK_WORKER_LOGS_DIR
+              value: "/tmp/logs"
+            - name: SPARK_MASTER_URL
+              value: "spark://spark-master-svc:7077"
+          volumeMounts:
+            - name: rsync-bin
+              mountPath: /usr/bin/rsync
+      volumes:
+        - name: rsync-bin
+          hostPath:
+            path: /usr/bin/rsync
+
+
