@@ -5,7 +5,8 @@ FROM python
 RUN mkdir /app
 
 # install depndencies
-RUN pip install kafka-python 
+RUN pip install kafka-python Faker
+
 
 # copy files
 COPY ./producer.py /app/producer.py

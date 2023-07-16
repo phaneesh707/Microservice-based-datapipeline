@@ -1,13 +1,55 @@
-from kafka import KafkaConsumer
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import explode, split
 
-# Configure Kafka consumer
-kafka_topic = "topic1"
-kafka_broker = "kafka-svc:9092"
-consumer = KafkaConsumer(kafka_topic, bootstrap_servers=kafka_broker)
+KAFKA_TOPIC = "topic1"
+KAFKA_BROKER = "kafka-svc:9092"
 
-# Consume messages from Kafka
-for message in consumer:
-    print(message.value.decode("utf-8"))
+spark = SparkSession.builder.appName("test").getOrCreate()
+spark.sparkContext.setLogLevel("WARN")
+
+df = spark.readStream.format("kafka") \
+    .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+    .option("subscribe", KAFKA_TOPIC) \
+    .option("startingOffsets", "earliest") \
+    .load()
+
+words = df.select(
+    explode(
+        split(df.value.cast("string"), " ")
+    ).alias("word")
+)
+
+wordCounts = words.groupBy("word").count()
+
+query = wordCounts \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+
+query.awaitTermination()
+
+
+
+
+
+
+
+
+
+# from kafka import KafkaConsumer
+
+# # Configure Kafka consumer
+# kafka_topic = "topic1"
+# kafka_broker = "kafka-svc:9092"
+# consumer = KafkaConsumer(kafka_topic, bootstrap_servers=kafka_broker)
+
+# # Consume messages from Kafka
+# for message in consumer:
+#     print(message.value.decode("utf-8"))
+
+
+
 
 
 

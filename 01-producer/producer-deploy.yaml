@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
         - name: kafka-producer
-          image: phaneesh707/producer:2.0
+          image: phaneesh707/producer:2.1
           command: ["/bin/sh"]
           args: ["-c", "while true; do echo hello; sleep 10;done"]
-          ports:
-            - containerPort: 8085
+          imagePullPolicy: Always
+
 
