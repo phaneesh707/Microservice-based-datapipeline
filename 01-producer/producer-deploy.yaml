@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
         - name: kafka-producer
-          image: phaneesh707/producer:2.1
+          image: phaneesh707/producer:2.3
           command: ["/bin/sh"]
-          args: ["-c", "while true; do echo hello; sleep 10;done"]
+          args: ["-c", "while true; do echo helllo; sleep 10;done"]
           imagePullPolicy: Always
 
 

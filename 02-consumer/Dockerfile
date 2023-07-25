@@ -1,7 +1,7 @@
-# Stage 1: Build Python base image
+#  Build Python base image
 FROM python:3.9-slim AS python-base
 
-# Stage 2: Add JDK to Python base image
+# Add JDK to Python base image
 FROM python-base AS final
 
 # Install JDK
@@ -10,18 +10,22 @@ RUN apt-get update && apt-get install -y default-jdk
 # Set JAVA_HOME environment variable
 ENV JAVA_HOME="/usr/lib/jvm/default-java"
 
+
+# FROM bitnami/spark:latest
+# FROM bitnami/spark:latest
+
 #create directory
-RUN mkdir /app
+RUN mkdir /home/app
 
 # install depndencies
 RUN pip install kafka-python pyspark kafka-utils
 
 
 # copy files
-COPY ./consumer.py /app/
+COPY ./consumer.py /home/app/
 
 # set working directory
-WORKDIR /app
+WORKDIR /home/app
 
 # run script
-CMD ["python", "consumer.py"]
+CMD ["submit-spark", "consumer.py"]

@@ -16,5 +16,5 @@ spec:
         - name: consumer
           image: phaneesh707/consumer:2.2
           command: ["/bin/sh"]
-          args: ["-c", "while true; do echo hello1; sleep 10;done"]
+          args: ["-c", "while true; do echo helllo; sleep 10;done"]
           imagePullPolicy: Always

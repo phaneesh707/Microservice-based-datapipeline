@@ -30,6 +30,8 @@ spec:
       containers:
         - name: spark-master-container
           image: bitnami/spark:latest
+          command: ["/bin/sh"]
+          args: ["-c", "while true; do echo helloo; sleep 10;done"]
           ports:
             - containerPort: 7077
             - containerPort: 8080
@@ -40,6 +42,18 @@ spec:
               value: "8080"
             - name: SPARK_MASTER_LOGS_DIR
               value: "/tmp/logs"
+            - name: SPARK_SUBMIT_OPTIONS
+              value: "--conf spark.jars.ivy=/tmp/.ivy2"
+          volumeMounts:
+            - name: src-volume
+              mountPath: /opt/bitnami/spark/conf
+      volumes:
+        - name: src-volume
+          configMap:
+            name: my-config
+
+            
+
 ---
 apiVersion: v1
 kind: Service

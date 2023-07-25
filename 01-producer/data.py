@@ -5,7 +5,7 @@ import random
 def generateRow(fake):
     order_id = fake.uuid4()[:8].upper()  
     customer_id = fake.random_int(min=1000, max=9999)
-    product_id = f"PROD{fake.random_int(min=1, max=100):03}"
+    product_id = f"PROD{fake.random_int(min=1, max=20):03}"
     unit_price = round(random.uniform(10, 1000), 2)
     quantity = fake.random_int(min=1, max=10)
     order_date = fake.date_between(start_date='-1y', end_date='today').strftime('%Y-%m-%d')
@@ -29,7 +29,7 @@ def generateOrders(outputFile,row_count):
 
 if __name__ == '__main__':
     outputFile = "data.csv"
-    row_count = 1000
+    row_count = 100
 
     generateOrders(outputFile, row_count)
     print("Orderes data created successfully.")

@@ -23,4 +23,7 @@ Jugaad - use commands and args in yaml
 
 
 <!-- to run pyspark app -->
-spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0 FILE-NAME
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0 FILE_NAME
+
+<!-- enter into terminlal of pod -->
+kubectl exec -it POD_NAME -- /bin/bash
