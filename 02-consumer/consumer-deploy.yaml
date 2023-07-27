@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: consumer
-          image: phaneesh707/consumer:2.2
+          image: phaneesh707/consumer:2.5
           command: ["/bin/sh"]
           args: ["-c", "while true; do echo helllo; sleep 10;done"]
           imagePullPolicy: Always

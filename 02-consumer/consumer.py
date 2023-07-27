@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, split, from_json, col
+from pyspark.sql.functions import from_json, col ,split
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, DateType
+import psycopg2
 
 KAFKA_TOPIC = "orders"
 KAFKA_BROKER = "kafka-svc:9092"
@@ -8,14 +9,13 @@ KAFKA_BROKER = "kafka-svc:9092"
 spark = SparkSession.builder.appName("test").getOrCreate()
 spark.sparkContext.setLogLevel("WARN")
 
-
 schema = StructType([
-    StructField("OrderId", StringType()),
+    StructField("OrderId", StringType()),         
     StructField("CustomerId", StringType()),
     StructField("ProductId", StringType()),
-    StructField("UnitPrice", DoubleType()),
-    StructField("Quantity", IntegerType()),
-    StructField("OrderDate", DateType()),
+    StructField("UnitPrice", DoubleType()),       
+    StructField("Quantity", IntegerType()),        
+    StructField("OrderDate", DateType()),          
     StructField("Category", StringType()),
     StructField("City", StringType())
 ])
@@ -26,69 +26,57 @@ df = spark.readStream.format("kafka") \
     .option("startingOffsets", "latest") \
     .load()
 
-row = df.selectExpr("CAST(value AS STRING)")
-
-parsed_row = row.select(from_json(col("value"), schema).alias("data")).select("data.*")
-
-# analysis
-category_count = parsed_row.groupBy("Category").count()
-total_quantity = parsed_row.groupBy("Category").sum("Quantity")
-total_price = parsed_row.groupBy("Category").sum("UnitPrice")
-max_order_city = parsed_row.groupBy("Category").agg({"City": "max"})
+# Assuming the value column contains the JSON data
+parsed_row = df.selectExpr("CAST(value AS STRING)")
+parsed_row = parsed_row.select(from_json(col("value"), schema).alias("data")).select("data.*")
 
 
+def get_db_connection():
+    db_host = "postgres-svc"  
+    db_port = "5432"           
+    db_name = "user"     
+    db_user = "user"         
+    db_password = "password" 
+
+    connection = psycopg2.connect(
+        host=db_host,
+        port=db_port,
+        database=db_name,
+        user=db_user,
+        password=db_password
+    )
+    return connection
 
 
-query = category_count.writeStream \
-    .outputMode("complete") \
-    .format("console") \
+
+
+def insert_into_orders_table(batch_df, batch_id):
+    try:
+        with get_db_connection() as connection, connection.cursor() as cursor:
+            for row in batch_df.rdd.collect():
+                order_id = row["OrderId"]
+                customer_id = row["CustomerId"]
+                product_id = row["ProductId"]
+                unit_price = row["UnitPrice"]
+                quantity = row["Quantity"]
+                order_date = row["OrderDate"]
+                category = row["Category"]
+                city = row["City"]
+
+                insert_query = "INSERT INTO orders (OrderId, CustomerId, ProductId, UnitPrice, Quantity, OrderDate, Category, City) " \
+                               "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+
+                cursor.execute(insert_query, (order_id, customer_id, product_id, unit_price, quantity, order_date, category, city))
+                connection.commit()
+                print(f"orderId written to DB: {order_id}")
+    except Exception as e:
+        print(f"Error inserting data into the database: {e}")
+
+
+# Start the streaming
+write_query = parsed_row.writeStream \
+    .foreachBatch(insert_into_orders_table) \
     .start()
 
-query.awaitTermination()
 
-
-
-
-
-# from kafka import KafkaConsumer
-
-# # Configure Kafka consumer
-# kafka_topic = "topic1"
-# kafka_broker = "kafka-svc:9092"
-# consumer = KafkaConsumer(kafka_topic, bootstrap_servers=kafka_broker)
-
-# # Consume messages from Kafka
-# for message in consumer:
-#     print(message.value.decode("utf-8"))
-
-
-
-
-
-
-
-
-# from pyspark import SparkContext
-# from pyspark.streaming import StreamingContext
-# from pyspark.streaming.kafka import KafkaUtils
-
-# # Set up Spark context and streaming context
-# sc = SparkContext(appName="DataPipeline")
-# ssc = StreamingContext(sc, 1)
-
-# # Define Kafka topic and broker details
-# kafka_topic = "data-topic"
-# kafka_broker = "10.96.74.32:9092"
-
-# # Create a Kafka direct stream
-# kafka_stream = KafkaUtils.createDirectStream(ssc, [kafka_topic], {"metadata.broker.list": kafka_broker})
-
-# # Perform word count transformation
-# word_counts = kafka_stream.flatMap(lambda x: x[1].split(" ")).map(lambda word: (word, 1)).reduceByKey(lambda a, b: a + b)
-
-# # Print the word counts
-# word_counts.pprint()
-
-# # Start the streaming context
-# ssc.start()
-# ssc.awaitTermination()
+write_query.awaitTermination()

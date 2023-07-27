@@ -5,7 +5,7 @@ FROM python:3.9-slim AS python-base
 FROM python-base AS final
 
 # Install JDK
-RUN apt-get update && apt-get install -y default-jdk
+RUN apt-get update && apt-get install -y default-jdk 
 
 # Set JAVA_HOME environment variable
 ENV JAVA_HOME="/usr/lib/jvm/default-java"
@@ -18,7 +18,7 @@ ENV JAVA_HOME="/usr/lib/jvm/default-java"
 RUN mkdir /home/app
 
 # install depndencies
-RUN pip install kafka-python pyspark kafka-utils
+RUN pip install kafka-python pyspark kafka-utils psycopg2-binary
 
 
 # copy files
