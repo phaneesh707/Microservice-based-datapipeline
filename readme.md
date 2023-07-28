@@ -6,7 +6,7 @@ This repository contains a microservice-based data pipeline that uses Apache Kaf
 
 ## Architecture
 
-![alt text](https://github.com/phaneesh707/Microservice-based-datapipeline/blob/main/archi.png?raw=true)
+![alt text](https://ibb.co/PmsSvs2)
 ## Setup and Installation
 
 ### Prerequisites
