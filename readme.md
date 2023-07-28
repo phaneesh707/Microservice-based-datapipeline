@@ -31,8 +31,20 @@ This repository contains a microservice-based data pipeline that uses Apache Kaf
 ## Usage
 
 1. Create kafka topic & update it in producer , consumer file
+    ```
+    kubectl exec POD_NAME -- kafka-topics.sh --create --topic TOPIC-NAME --bootstrap-server kafka-svc:9092 --partitions 1  --replication-factor 1
+    ```
+    - to list all the topics created 
+    ```
+    kubectl exec POD_NAME -- kafka-topics.sh --list --bootstrap-server kafka-svc:9092
+    ```
 
 2. Enter into to postgres pod and create a DB and table and update the table name in consumer.py
+    ```
+    psql -u USER user
+    CREATE DATABASE DB-NAME
+    # create table 
+    ```
 
 3. Enter into producers pod  & run producer file
     ```
