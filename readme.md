@@ -6,7 +6,7 @@ This repository contains a microservice-based data pipeline that uses Apache Kaf
 
 ## Architecture
 
-![Archi](./05-files/archi.png)
+![alt text](https://github.com/phaneesh707/Microservice-based-datapipeline/blob/main/archi.png?raw=true)
 ## Setup and Installation
 
 ### Prerequisites
@@ -32,7 +32,8 @@ This repository contains a microservice-based data pipeline that uses Apache Kaf
 
 1. Create kafka topic & update it in producer , consumer file
     ```
-    kubectl exec POD_NAME -- kafka-topics.sh --create --topic TOPIC-NAME --bootstrap-server kafka-svc:9092 --partitions 1  --replication-factor 1
+    kubectl exec POD_NAME -- kafka-topics.sh --create --topic TOPIC-NAME \ 
+    --bootstrap-server kafka-svc:9092 --partitions 1  --replication-factor 1
     ```
     - to list all the topics created 
     ```
